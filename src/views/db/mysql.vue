@@ -1,0 +1,212 @@
+<template>
+  <el-dialog
+      v-model="visible"
+      width="90%"
+      :show-close="false"
+      align-center>
+    <div style="margin: 10px 30px;">
+      <div style="text-align: center;margin-bottom: 20px">
+        <img alt="" src="@/assets/images/mysql-icon-click.png" style="width: 50px;height: 50px;">
+      </div>
+      <el-form :model="data" :rules="Rules" ref="ruleFormRef" class="el-form-default" :validate-on-rule-change="false">
+        <el-form-item prop="ip">
+          <el-input placeholder="127.0.0.1" v-model="data.ip" size="large">
+            <template #prepend>IP地址</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="port">
+          <el-input placeholder="3306" v-model="data.port" size="large">
+            <template #prepend>端&nbsp;&nbsp;&nbsp;口</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="dbName">
+          <el-input v-model="data.dbName" size="large">
+            <template #prepend>数据库</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="userName">
+          <el-input placeholder="root" v-model="data.userName" size="large">
+            <template #prepend>用户名</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input placeholder="" v-model="data.password" size="large">
+            <template #prepend>密&nbsp;&nbsp;&nbsp;码</template>
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <el-tabs type="border-card">
+        <el-tab-pane label="基础设置">
+          <div style="display: flex;flex-direction: column">
+            <div style="display: flex;align-items: center">
+              <el-icon style="font-size: 20px;margin-right: 5px"><Upload /></el-icon>
+              <span style="font-weight: bolder;font-size: 20px">导出类型</span>
+            </div>
+            <div style="display: flex;align-items: center;margin-top: 10px">
+              <el-radio-group v-model="exportTypeSetList" size="large">
+                <el-radio-button v-for="(item,index) in exportTypeOption" :key="index" :value="item.value" :label="item.text"/>
+              </el-radio-group>
+              <el-tooltip
+                  class="box-item"
+                  effect="dark"
+                  content="VIEW为跳转至预览界面"
+                  placement="top">
+                <el-icon style="font-size: 20px;margin-left: 5px;color: #409eff"><QuestionFilled /></el-icon>
+              </el-tooltip>
+            </div>
+          </div>
+          <div style="margin-top: 20px">
+            <div style="display: flex;align-items: center">
+              <el-icon style="font-size: 20px;margin-right: 5px"><Tools /></el-icon>
+              <span style="font-weight: bolder;font-size: 20px">列名设置</span>
+            </div>
+            <div style="display: flex;align-items: center;margin-top: 10px">
+              <el-checkbox-group v-model="columnSetList" size="large">
+                <el-checkbox-button v-for="(item,index) in columOption" :key="index" :value="item.value">
+                  {{ item.text }}
+                </el-checkbox-button>
+              </el-checkbox-group>
+              <el-tooltip
+                  class="box-item"
+                  effect="dark"
+                  content="没有选择则默认显示全部列"
+                  placement="top">
+                <el-icon style="font-size: 20px;margin-left: 5px;color: #409eff"><QuestionFilled /></el-icon>
+              </el-tooltip>
+            </div>
+          </div>
+          <div style="margin-top: 20px">
+            <div style="display: flex;align-items: center">
+              <el-icon style="font-size: 20px;margin-right: 5px"><Tools /></el-icon>
+              <span style="font-weight: bolder;font-size: 20px">是否显示索引</span>
+              <el-switch style="margin-left: 20px" v-model="showIndex" />
+            </div>
+            <div v-if="showIndex" style="display: flex;align-items: center;margin-top: 10px">
+              <el-checkbox-group v-model="indexSetList" size="large">
+                <el-checkbox-button v-for="(item,index) in indexOption" :key="index" :value="item.value">
+                  {{ item.text }}
+                </el-checkbox-button>
+              </el-checkbox-group>
+              <el-tooltip
+                  class="box-item"
+                  effect="dark"
+                  content="没有选择则默认显示全部列"
+                  placement="top">
+                <el-icon style="font-size: 20px;margin-left: 5px;color: #409eff"><QuestionFilled /></el-icon>
+              </el-tooltip>
+            </div>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane label="选择表">
+          <el-tag size="large" type="primary">Tag 1</el-tag>
+          <el-tag size="large" type="primary" style="margin-left: 10px;">Tag 2</el-tag>
+          <el-tag size="large" type="primary" style="margin-left: 10px;">Tag 3</el-tag>
+          <el-tag size="large" type="primary" style="margin-left: 10px;">Tag 4</el-tag>
+          <el-tag size="large" type="primary" style="margin-left: 10px;">Tag 5</el-tag>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+    <template #footer>
+      <div class="dialog-footer" style="margin: 0 30px;">
+        <el-button type="primary" size="large" :icon="Download" @click="submitForm(ruleFormRef)">生成</el-button>
+        <el-button type="danger" size="large" style="margin-left: 20px;" :icon="Close" @click="closeDialog">关闭</el-button>
+      </div>
+    </template>
+  </el-dialog>
+  <el-col :span="6">
+    <el-card shadow="hover" style="padding: 0;margin: 10px 10px;cursor: pointer" @click="openDialog">
+      <div style="width: 100%;height: 200px;display: flex;justify-content: center;align-items: center;">
+        <img alt="" src="@/assets/images/mysql-icon-click.png" style="width: 120px;height: 120px;">
+      </div>
+      <div style="padding: 14px;text-align: center;margin: 20px 0">
+        <span style="font-weight: bolder;font-size: 40px">{{dbKind}}</span>
+      </div>
+    </el-card>
+  </el-col>
+</template>
+<script setup lang="ts">
+import {reactive,ref,onMounted,getCurrentInstance} from 'vue'
+const { proxy } = getCurrentInstance() as any;
+import { Download,Close,Tools,Upload,QuestionFilled } from '@element-plus/icons-vue'
+import type { FormInstance, FormRules } from 'element-plus'
+const dbKind = ref<String>('Mysql')
+const ruleFormRef = ref<FormInstance>()
+const visible = ref<Boolean>(false);
+const showIndex = ref<Boolean>(false);
+const columnSetList = ref(['columnName','dataType'])
+const indexSetList = ref(['fields'])
+const exportTypeSetList = ref<String>('VIEW')
+const exportTypeOption = ref<Array<DbBaseConfig>>([]);
+const columOption = ref<Array<DbBaseConfig>>([]);
+const indexOption = ref<Array<DbBaseConfig>>([]);
+interface DbBaseConfig{
+  value: string,
+  text: string
+}
+interface RuleForm{
+  dbKind: string,
+  ip: string,
+  port: number,
+  dbName: string,
+  userName: string,
+  password: string
+}
+const data = reactive<RuleForm>({
+  dbKind: 'mysql',
+  ip: '127.0.0.1',
+  port: 3306,
+  dbName: 'demo_db',
+  userName: 'root',
+  password: '123456',
+})
+const Rules = reactive<FormRules<RuleForm>>({
+  ip: [
+    {required: true, message: '不能为空'}
+  ],
+  port: [
+    {required: true, message: '不能为空'}
+  ],
+  dbName: [
+    {required: true, message: '不能为空'}
+  ],
+  userName: [
+    {required: true, message: '不能为空'}
+  ],
+  password: [
+    {required: true, message: '不能为空'}
+  ]
+});
+const submitForm = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      console.log('submit!')
+    } else {
+      console.log('error submit!', fields)
+    }
+  })
+}
+const closeDialog = () => {
+  visible.value = false
+}
+const openDialog = () => {
+  visible.value = true
+}
+onMounted(()=>{
+  fetchData();
+})
+const fetchData = async () => {
+  try {
+    const response = await proxy.$axios.get('/getConfig/'+dbKind.value);
+    const data = response.data;
+    columOption.value = data.params.columnConfig;
+    indexOption.value = data.params.indexConfig;
+    exportTypeOption.value = data.params.exportTypeConfig;
+  } catch (error) {
+    console.error(error);
+  }
+};
+</script>
+<style scoped lang="less">
+
+</style>
