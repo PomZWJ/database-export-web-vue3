@@ -79,7 +79,7 @@
             <div style="display: flex;align-items: center">
               <el-icon style="font-size: 20px;margin-right: 5px"><Tools /></el-icon>
               <span style="font-weight: bolder;font-size: 20px">是否显示索引</span>
-              <el-switch style="margin-left: 20px" v-model="showIndex" />
+              <el-switch style="margin-left: 20px" v-model="showIndex" :active-value="1" :inactive-value="0"/>
             </div>
             <div v-if="showIndex" style="display: flex;align-items: center;margin-top: 10px">
               <el-checkbox-group v-model="indexSetList" size="large">
@@ -98,17 +98,21 @@
           </div>
         </el-tab-pane>
         <el-tab-pane label="选择表">
-          <el-tag size="large" type="primary">Tag 1</el-tag>
-          <el-tag size="large" type="primary" style="margin-left: 10px;">Tag 2</el-tag>
-          <el-tag size="large" type="primary" style="margin-left: 10px;">Tag 3</el-tag>
-          <el-tag size="large" type="primary" style="margin-left: 10px;">Tag 4</el-tag>
-          <el-tag size="large" type="primary" style="margin-left: 10px;">Tag 5</el-tag>
+          <el-tag v-for="tag in selectedTableList" :key="tag"
+                  size="large"
+                  type="primary"
+                  style="margin-right: 10px;margin-bottom: 10px;"
+                  closable
+                  @close="deleteSelectedTable(tag)">
+            {{tag}}
+          </el-tag>
+          <select-table @confirmEvent="getSelectedTableList" :dbParams="data" :selectedTableList="selectedTableList"></select-table>
         </el-tab-pane>
       </el-tabs>
     </div>
     <template #footer>
       <div class="dialog-footer" style="margin: 0 30px;">
-        <el-button type="primary" size="large" :icon="Download" @click="submitForm(ruleFormRef)">生成</el-button>
+        <el-button type="primary" size="large" :icon="Download" @click="submitForm(ruleFormRef)" :loading="makeLoading">生成</el-button>
         <el-button type="danger" size="large" style="margin-left: 20px;" :icon="Close" @click="closeDialog">关闭</el-button>
       </div>
     </template>
@@ -129,16 +133,21 @@ import {reactive,ref,onMounted,getCurrentInstance} from 'vue'
 const { proxy } = getCurrentInstance() as any;
 import { Download,Close,Tools,Upload,QuestionFilled } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
-const dbKind = ref<String>('Mysql')
+import { useRouter } from 'vue-router'
+import SelectTable from "@/views/select-table.vue";
+const dbKind = ref<string>('Mysql')
 const ruleFormRef = ref<FormInstance>()
-const visible = ref<Boolean>(false);
-const showIndex = ref<Boolean>(false);
+const visible = ref<boolean>(false);
+const showIndex = ref<number>(0);
 const columnSetList = ref(['columnName','dataType'])
 const indexSetList = ref(['fields'])
-const exportTypeSetList = ref<String>('VIEW')
+const exportTypeSetList = ref<string>('VIEW')
 const exportTypeOption = ref<Array<DbBaseConfig>>([]);
 const columOption = ref<Array<DbBaseConfig>>([]);
 const indexOption = ref<Array<DbBaseConfig>>([]);
+const selectedTableList = ref<Array<string>>([]);
+const router = useRouter();
+const makeLoading = ref<boolean>(false)
 interface DbBaseConfig{
   value: string,
   text: string
@@ -176,13 +185,30 @@ const Rules = reactive<FormRules<RuleForm>>({
     {required: true, message: '不能为空'}
   ]
 });
+const deleteSelectedTable = (tag: string) => {
+  selectedTableList.value.splice(selectedTableList.value.indexOf(tag), 1)
+}
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  await formEl.validate((valid, fields) => {
+  await formEl.validate((valid) => {
     if (valid) {
-      console.log('submit!')
-    } else {
-      console.log('error submit!', fields)
+      if(exportTypeSetList.value == 'VIEW'){
+        const {href} = router.resolve({
+          name: 'Preview',
+          query: {
+            'base64Params': btoa(JSON.stringify(data)),
+            'columnSetList': columnSetList.value.join(','),
+            'indexSetList': indexSetList.value.join(','),
+            'exportTypeSetList': exportTypeSetList.value,
+            'showIndex': showIndex.value,
+            'selectTableStr': selectedTableList.value.join(',')
+          }
+        });
+        window.open(href, '_blank')
+      }else{
+        getMakeFile();
+      }
+
     }
   })
 }
@@ -192,10 +218,13 @@ const closeDialog = () => {
 const openDialog = () => {
   visible.value = true
 }
+const getSelectedTableList = (arr:Array<string>) => {
+  selectedTableList.value = arr;
+}
 onMounted(()=>{
-  fetchData();
+  getAsyncDbConfig();
 })
-const fetchData = async () => {
+const getAsyncDbConfig = async () => {
   try {
     const response = await proxy.$axios.get('/getConfig/'+dbKind.value);
     const data = response.data;
@@ -206,6 +235,28 @@ const fetchData = async () => {
     console.error(error);
   }
 };
+const getMakeFile = async () => {
+  let temp = data;
+  makeLoading.value = true;
+  try {
+    let a = {};
+    Object.assign(a,temp);
+    Object.assign(a,{
+      'columnSetList': columnSetList.value.join(','),
+      'indexSetList': indexSetList.value.join(','),
+      'exportTypeSetList': exportTypeSetList.value,
+      'showIndex': showIndex.value,
+      'selectTableStr': selectedTableList.value.join(','),
+      'exportFileType': exportTypeSetList.value
+    })
+    const response = await proxy.$axios.post('/makeFile/',a);
+    window.open("/getFile/"+response.data.params.fileName, '_blank')
+    makeLoading.value = false;
+  } catch (error) {
+    makeLoading.value = false;
+    console.error(error);
+  }
+}
 </script>
 <style scoped lang="less">
 

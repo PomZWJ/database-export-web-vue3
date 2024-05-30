@@ -24,7 +24,8 @@
     "element-plus": "^2.7.3",
     "less": "^4.2.0",
     "less-loader": "^12.2.0",
-    "vue": "^3.4.21"
+    "vue": "^3.4.21",
+    "vue-router": "4"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
