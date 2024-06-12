@@ -4,9 +4,9 @@
       width="90%"
       :show-close="false"
       align-center>
-    <div style="margin: 10px 30px;">
-      <div style="text-align: center;margin-bottom: 20px">
-        <img alt="" src="@/assets/images/mysql-icon-click.png" style="width: 50px;height: 50px;">
+    <div class="my-content">
+      <div class="header-content">
+        <img alt="" src="@/assets/images/mysql-icon-click.png">
       </div>
       <el-form :model="data" :rules="Rules" ref="ruleFormRef" class="el-form-default" :validate-on-rule-change="false">
         <el-form-item prop="ip">
@@ -232,7 +232,7 @@ const getAsyncDbConfig = async () => {
     indexOption.value = data.params.indexConfig;
     exportTypeOption.value = data.params.exportTypeConfig;
   } catch (error) {
-    console.error(error);
+    //useFailedNotification(error);
   }
 };
 const getMakeFile = async () => {
@@ -249,15 +249,58 @@ const getMakeFile = async () => {
       'selectTableStr': selectedTableList.value.join(','),
       'exportFileType': exportTypeSetList.value
     })
-    const response = await proxy.$axios.post('/makeFile/',a);
-    window.open("/getFile/"+response.data.params.fileName, '_blank')
+    const makeFileResponse = await proxy.$axios.post('/makeFile/',a);
+    if(makeFileResponse.data.resultCode != '000000'){
+      //useFailedNotification(makeFileResponse.data.resultMsg)
+      return;
+    }
+    let downloadPostData = {
+      fileName: makeFileResponse.data.params.fileName
+    }
+    //useSuccessNotification("下载成功");
+    // 发送 POST 请求
+    const response = await proxy.$axios.post('/getFile', downloadPostData, {
+      responseType: 'blob', // 重要！告诉 axios 期望返回的是一个 Blob 对象
+    });
+
+    // 创建一个 Blob 对象来保存文件内容
+    const blob = new Blob([response.data], { type: response.headers['content-type'] });
+
+    // 创建一个指向该 Blob 对象的 URL
+    const url = window.URL.createObjectURL(blob);
+
+    // 创建一个 a 标签来模拟点击下载
+    const link = document.createElement('a');
+    link.href = url;
+    // 设置文件名，这里你可以根据服务器返回的数据或你的需求来设置
+    link.setAttribute('download', makeFileResponse.data.params.fileName);
+
+    // 触发下载
+    document.body.appendChild(link);
+    link.click();
+
+    // 然后从 DOM 中移除该 a 标签
+    document.body.removeChild(link);
+
+    // 释放 URL 对象
+    window.URL.revokeObjectURL(url);
     makeLoading.value = false;
   } catch (error) {
     makeLoading.value = false;
-    console.error(error);
+    //useFailedNotification(error)
   }
 }
 </script>
 <style scoped lang="less">
-
+.my-content{
+  margin: 10px 30px;
+  .header-content{
+    text-align: center;
+    margin-bottom: 20px;
+    img{
+      width: 50px;
+      height: 50px;
+    }
+  }
+}
 </style>
