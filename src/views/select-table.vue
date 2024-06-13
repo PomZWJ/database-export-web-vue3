@@ -20,23 +20,33 @@
   </el-drawer>
 </template>
 <script setup lang="ts">
-import { ref,onMounted,getCurrentInstance } from 'vue'
-import { ElTable } from 'element-plus'
+import { ref,getCurrentInstance,watch } from 'vue'
+import {ElMessage, ElTable} from 'element-plus'
 const { proxy } = getCurrentInstance() as any;
 const drawer = ref(false)
 const tableData = ref([]);
 const multipleTableRef = ref<InstanceType<typeof ElTable>>()
+interface RuleForm{
+  dbKind: string,
+  ip: string,
+  port: number,
+  dbName: string,
+  userName: string,
+  password: string,
+  schemas: string
+}
 interface Props {
-  dbParams: object;
+  dbParams: RuleForm;
   selectedTableList: Array<string>
 }
 const props = defineProps<Props>();
 
 const $emit = defineEmits(['confirmEvent'])
-
-onMounted(()=>{
-  getAllTable();
-});
+watch(drawer, (newValue)=>{
+  if(newValue){
+    getAllTable();
+  }
+})
 const toggleSelection = (rows?: string[]) => {
   if (rows) {
     rows.forEach((row) => {
@@ -46,13 +56,19 @@ const toggleSelection = (rows?: string[]) => {
     multipleTableRef.value!.clearSelection()
   }
 }
+const alertFailedNotification = (msg:string) => {
+  ElMessage.error(msg)
+}
 const getAllTable = async () => {
   try {
     const response = await proxy.$axios.post('/getAllTableInfo/',props.dbParams);
+    if(response.data.resultCode != '000000'){
+      throw new Error(response.data.resultMsg);
+    }
     tableData.value = response.data.params;
     toggleSelection(props.selectedTableList);
-  } catch (error) {
-    console.error(error);
+  } catch (error:any) {
+    alertFailedNotification(error.message)
   }
 };
 function cancelClick() {
@@ -60,7 +76,7 @@ function cancelClick() {
 }
 function confirmClick() {
   //通过Element-Plus表格的getSelectionRows的方法，获取已选中的数据
-  let tableData = multipleTableRef.value.getSelectionRows();
+  let tableData = multipleTableRef.value!.getSelectionRows();
   let arrTemp = [];
   for(let i=0;i<tableData.length;i++){
     arrTemp.push(tableData[i].tableName);

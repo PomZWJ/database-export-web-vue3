@@ -62,14 +62,18 @@
             </div>
             <div style="display: flex;align-items: center;margin-top: 10px">
               <el-checkbox-group v-model="columnSetList" size="large">
-                <el-checkbox-button v-for="(item,index) in columOption" :key="index" :value="item.value">
+                <el-checkbox-button
+                    v-for="(item,index) in columOption"
+                    :key="index"
+                    :value="item.value"
+                    :disabled="['columnName','dataType'].includes(item.value)">
                   {{ item.text }}
                 </el-checkbox-button>
               </el-checkbox-group>
               <el-tooltip
                   class="box-item"
                   effect="dark"
-                  content="没有选择则默认显示全部列"
+                  content="列名和数据类型为必选"
                   placement="top">
                 <el-icon style="font-size: 20px;margin-left: 5px;color: #409eff"><QuestionFilled /></el-icon>
               </el-tooltip>
@@ -83,14 +87,18 @@
             </div>
             <div v-if="showIndex" style="display: flex;align-items: center;margin-top: 10px">
               <el-checkbox-group v-model="indexSetList" size="large">
-                <el-checkbox-button v-for="(item,index) in indexOption" :key="index" :value="item.value">
+                <el-checkbox-button
+                    v-for="(item,index) in indexOption"
+                    :key="index"
+                    :value="item.value"
+                    :disabled="['fields'].includes(item.value)">
                   {{ item.text }}
                 </el-checkbox-button>
               </el-checkbox-group>
               <el-tooltip
                   class="box-item"
                   effect="dark"
-                  content="没有选择则默认显示全部列"
+                  content="索引字段为必选"
                   placement="top">
                 <el-icon style="font-size: 20px;margin-left: 5px;color: #409eff"><QuestionFilled /></el-icon>
               </el-tooltip>
@@ -129,10 +137,11 @@
   </el-col>
 </template>
 <script setup lang="ts">
-import {reactive,ref,onMounted,getCurrentInstance} from 'vue'
+import {reactive,ref,watch,getCurrentInstance} from 'vue'
 const { proxy } = getCurrentInstance() as any;
 import { Download,Close,Tools,Upload,QuestionFilled } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import SelectTable from "@/views/select-table.vue";
 const dbKind = ref<string>('Mysql')
@@ -158,7 +167,8 @@ interface RuleForm{
   port: number,
   dbName: string,
   userName: string,
-  password: string
+  password: string,
+  schemas: string
 }
 const data = reactive<RuleForm>({
   dbKind: 'mysql',
@@ -167,6 +177,7 @@ const data = reactive<RuleForm>({
   dbName: 'demo_db',
   userName: 'root',
   password: '123456',
+  schemas: ''
 })
 const Rules = reactive<FormRules<RuleForm>>({
   ip: [
@@ -221,18 +232,26 @@ const openDialog = () => {
 const getSelectedTableList = (arr:Array<string>) => {
   selectedTableList.value = arr;
 }
-onMounted(()=>{
-  getAsyncDbConfig();
+const alertFailedNotification = (msg:string) => {
+  ElMessage.error(msg)
+}
+watch(visible, (newValue)=>{
+  if(newValue){
+    getAsyncDbConfig();
+  }
 })
 const getAsyncDbConfig = async () => {
   try {
     const response = await proxy.$axios.get('/getConfig/'+dbKind.value);
+    if(response.data.resultCode != '000000'){
+      throw new Error(response.data.resultMsg);
+    }
     const data = response.data;
     columOption.value = data.params.columnConfig;
     indexOption.value = data.params.indexConfig;
     exportTypeOption.value = data.params.exportTypeConfig;
-  } catch (error) {
-    //useFailedNotification(error);
+  } catch (error:any) {
+    alertFailedNotification(error.message);
   }
 };
 const getMakeFile = async () => {
@@ -251,8 +270,7 @@ const getMakeFile = async () => {
     })
     const makeFileResponse = await proxy.$axios.post('/makeFile/',a);
     if(makeFileResponse.data.resultCode != '000000'){
-      //useFailedNotification(makeFileResponse.data.resultMsg)
-      return;
+      throw new Error(makeFileResponse.data.resultMsg);
     }
     let downloadPostData = {
       fileName: makeFileResponse.data.params.fileName
@@ -285,9 +303,9 @@ const getMakeFile = async () => {
     // 释放 URL 对象
     window.URL.revokeObjectURL(url);
     makeLoading.value = false;
-  } catch (error) {
+  } catch (error:any) {
     makeLoading.value = false;
-    //useFailedNotification(error)
+    alertFailedNotification(error.message)
   }
 }
 </script>
