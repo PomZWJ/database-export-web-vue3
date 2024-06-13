@@ -25,7 +25,7 @@
           </el-input>
         </el-form-item>
         <el-form-item prop="userName">
-          <el-input placeholder="root" v-model="data.userName" size="large">
+          <el-input v-model="data.userName" size="large">
             <template #prepend>用户名</template>
           </el-input>
         </el-form-item>
