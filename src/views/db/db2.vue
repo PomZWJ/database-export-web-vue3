@@ -119,7 +119,8 @@
                   @close="deleteSelectedTable(tag)">
             {{tag}}
           </el-tag>
-          <select-table @confirmEvent="getSelectedTableList" :dbParams="data" :selectedTableList="selectedTableList"></select-table>
+          <el-button type="primary" plain style="margin-left: 10px;margin-bottom: 10px" @click="showSelectTable(ruleFormRef)">新增</el-button>
+          <select-table @confirmEvent="getSelectedTableList" :dbParams="data" :selectedTableList="selectedTableList" ref="selectTableRef"></select-table>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -161,6 +162,7 @@ const columOption = ref<Array<DbBaseConfig>>([]);
 const indexOption = ref<Array<DbBaseConfig>>([]);
 const selectedTableList = ref<Array<string>>([]);
 const router = useRouter();
+const selectTableRef = ref(null);
 const makeLoading = ref<boolean>(false)
 interface DbBaseConfig{
   value: string,
@@ -312,6 +314,14 @@ const getMakeFile = async () => {
     makeLoading.value = false;
     alertFailedNotification(error.message)
   }
+}
+const showSelectTable = (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  formEl.validate((valid) => {
+    if (valid) {
+      selectTableRef.value.showClick()
+    }
+  })
 }
 </script>
 <style scoped lang="less">

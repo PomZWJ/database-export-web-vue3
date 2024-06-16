@@ -1,5 +1,4 @@
 <template>
-  <el-button type="primary" plain style="margin-left: 10px;margin-bottom: 10px" @click="drawer=true">新增</el-button>
   <el-drawer v-model="drawer" direction="rtl" size="50%">
     <template #header>
       <h4>{{dbParams.dbName}}</h4>
@@ -71,8 +70,11 @@ const getAllTable = async () => {
     alertFailedNotification(error.message)
   }
 };
-function cancelClick() {
+const cancelClick=()=> {
   drawer.value = false
+}
+const showClick=()=> {
+  drawer.value = true
 }
 function confirmClick() {
   //通过Element-Plus表格的getSelectionRows的方法，获取已选中的数据
@@ -84,6 +86,10 @@ function confirmClick() {
   cancelClick();
   $emit('confirmEvent',arrTemp);
 }
+defineExpose({
+  showClick,
+  cancelClick
+});
 </script>
 <style scoped lang="less">
 

@@ -96,7 +96,15 @@ const tableData = ref<tableDataDefine>({
   fieldList: [],
   indexFieldList: []
 });
-const dbJsonParams = ref({})
+const dbJsonParams = ref<RuleForm>({
+  dbKind: '',
+  ip: '',
+  port: 0,
+  dbName: '',
+  userName: '',
+  password: '',
+  schemas: ''
+})
 interface tableDataDefine{
   tableDetailInfo: Array<tableDetailDefine>,
   fieldList: Array<genItemDefine>,
@@ -111,6 +119,15 @@ interface tableDetailDefine{
   tableComments: string,
   tabsColumn: Array<any>,
   tabsIndex: Array<any>,
+}
+interface RuleForm{
+  dbKind: string,
+  ip: string,
+  port: number,
+  dbName: string,
+  userName: string,
+  password: string,
+  schemas: string
 }
 onMounted(()=>{
   dbJsonParams.value = JSON.parse(atob(<string>router.currentRoute.value.query.base64Params));
