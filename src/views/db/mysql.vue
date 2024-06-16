@@ -314,7 +314,7 @@ const showSelectTable = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
-      selectTableRef.value.showClick()
+      selectTableRef.value!.showClick()
     }
   })
 }

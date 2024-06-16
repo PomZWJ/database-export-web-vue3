@@ -58,8 +58,8 @@ import PackageJson from '../../package.json'
 const projectName = ref<String>(PackageJson.name);
 const projectVersion = ref<String>(PackageJson.version)
 const projectDescription = ref<String>(PackageJson.description)
-import { Sunny, Moon } from '@element-plus/icons-vue'
-import { useDark, useToggle } from '@vueuse/core'
+//import { Sunny, Moon } from '@element-plus/icons-vue'
+//import { useDark, useToggle } from '@vueuse/core'
 import Mysql from "@/views/db/mysql.vue";
 import Oracle from "@/views/db/oracle.vue";
 import Sqlserver from "@/views/db/sqlserver.vue";
@@ -69,18 +69,18 @@ import Db2 from "@/views/db/db2.vue";
 import Dm from "@/views/db/dm.vue";
 import Sqlite from "@/views/db/sqlite.vue";
 
-const theme = ref<boolean>(localStorage.getItem('useDarkKEY') === 'dark' ? true : false)
+//const theme = ref<boolean>(localStorage.getItem('useDarkKEY') === 'dark' ? true : false)
 
-const isDark = useDark({
+/*const isDark = useDark({
   // 存储到localStorage中的Key 根据自己的需求更改
   storageKey: 'useDarkKEY',
   // 暗黑class名字
   valueDark: 'dark',
   // 高亮class名字
   valueLight: 'light',
-})
+})*/
 
-const toggle = useToggle(isDark);
+//const toggle = useToggle(isDark);
 </script>
 <style scoped lang="less">
 .main {
