@@ -12,14 +12,14 @@
           </div>
         </div>
         <div class="header-link">
-          <div style="margin-left: 20px;margin-top: -5px;">
+          <!--<div style="margin-left: 20px;margin-top: -5px;">
             <el-switch
                 v-model="theme"
                 :active-action-icon="Moon"
                 :inactive-action-icon="Sunny"
                 inline-prompt
                 @change="toggle"/>
-          </div>
+          </div>-->
           <div style="margin-left: 20px;">
             <el-tooltip class="item" effect="dark" content="gitee" placement="bottom">
               <img alt="" onclick="window.open('https://gitee.com/pomz/database-export')" src="@/assets/images/gitee-icon.png">
@@ -28,6 +28,11 @@
           <div style="margin-left: 20px;">
             <el-tooltip class="item" effect="dark" content="github" placement="bottom">
               <img alt="" onclick="window.open('https://github.com/PomZWJ/database-export/')" src="@/assets/images/gitHub-icon.png">
+            </el-tooltip>
+          </div>
+          <div style="margin-left: 20px;">
+            <el-tooltip class="item" effect="dark" content="about me" placement="bottom">
+              <img alt="" onclick="window.open('https://pomzwj.github.io/')" src="@/assets/images/aboutme.png">
             </el-tooltip>
           </div>
         </div>
