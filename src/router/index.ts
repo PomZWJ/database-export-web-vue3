@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import IndexPage from '../views/index.vue'
 import PreviewPage from '../views/preview.vue'
 // 定义路由
@@ -17,7 +17,7 @@ const routes: Array<RouteRecordRaw> = [
 
 // 创建router实例
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes,
 });
 
