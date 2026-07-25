@@ -1,7 +1,7 @@
 {
   "name": "database-export-vue3",
   "private": true,
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "数据库表结构导出工具",
   "author": {
     "name": "PomZWJ",
